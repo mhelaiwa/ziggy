@@ -7,47 +7,47 @@ on:
     paths-ignore: ['dist/**', '*.md']
 jobs:
   test:
-    name: ${{ matrix.os[0] }}, PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, ${{ matrix.dependencies }}
+    name: ${{ matrix.os[0] }}, PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel[0] }}, ${{ matrix.dependencies }}
     runs-on: ${{ matrix.os[1] }}
     strategy:
       fail-fast: false
       matrix:
         os: [[Ubuntu, ubuntu-latest], [Windows, windows-latest]]
         php: ['7.3', '7.4', '8.0', '8.1']
-        laravel: [5.5.*, 5.6.*, 5.7.*, 5.8.*, 6.*, 7.*, 8.*, 9.*]
+        laravel: [[5.5, ~5.5.0], [5.6, ~5.6.0], [5.7, ~5.7.0], [5.8, ~5.8.0], [6, ^6.0], [7, ^7.0.6], [8, ^8.0], [9, ^9.0]]
         dependencies: [lowest, highest]
         exclude:
           - php: '7.3'
-            laravel: 9.*
+            laravel: [9, ^9.0]
           - php: '7.4'
-            laravel: 9.*
+            laravel: [9, ^9.0]
           - php: '8.0'
-            laravel: 5.5.*
+            laravel: [5.5, ~5.5.0]
           - php: '8.0'
-            laravel: 5.6.*
+            laravel: [5.6, ~5.6.0]
           - php: '8.0'
-            laravel: 5.7.*
+            laravel: [5.7, ~5.7.0]
           - php: '8.0'
-            laravel: 5.8.*
+            laravel: [5.8, ~5.8.0]
           - php: '8.1'
-            laravel: 5.5.*
+            laravel: [5.5, ~5.5.0]
           - php: '8.1'
-            laravel: 5.6.*
+            laravel: [5.6, ~5.6.0]
           - php: '8.1'
-            laravel: 5.7.*
+            laravel: [5.7, ~5.7.0]
           - php: '8.1'
-            laravel: 5.8.*
+            laravel: [5.8, ~5.8.0]
           - php: '8.1'
-            laravel: 6.*
+            laravel: [6, ^6.0]
           - php: '8.1'
-            laravel: 7.*
+            laravel: [7, ^7.0.6]
     steps:
       - uses: actions/checkout@v3
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: fileinfo, json
-      - run: composer require laravel/framework:"${{ matrix.laravel }}" --no-update --no-interaction
+      - run: composer require laravel/framework:"${{ matrix.laravel[1] }}" --no-update --no-interaction
       - uses: ramsey/composer-install@v2
         with:
           dependency-versions: ${{ matrix.dependencies }}
