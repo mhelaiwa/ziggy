@@ -10,11 +10,11 @@ jobs:
     name: ${{ matrix.os[0] }}, PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel[0] }}, ${{ matrix.dependencies }}
     runs-on: ${{ matrix.os[1] }}
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.ref_name != 'ci' }}
       matrix:
         os: [[Ubuntu, ubuntu-latest], [Windows, windows-latest]]
         php: ['7.3', '7.4', '8.0', '8.1']
-        laravel: [[5.5, ~5.5.0], [5.6, ~5.6.0], [5.7, ~5.7.0], [5.8, ~5.8.0], [6, ^6.0], [7, ^7.0.6], [8, ^8.0], [9, ^9.0]]
+        laravel: [[5.5, ~5.5.0], [5.6, ~5.6.0], [5.7, ~5.7.0], [5.8, ~5.8.0], [6, ^6.0], [7, ^7.0.6], [8, ^8.12], [9, ^9.0]]
         dependencies: [lowest, highest]
         exclude:
           - php: '7.3'
