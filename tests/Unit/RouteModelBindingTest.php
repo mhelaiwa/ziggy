@@ -17,6 +17,9 @@ class RouteModelBindingTest extends TestCase
         $router->get('users/{user}', function (User $user) {
             return '';
         })->name('users');
+        $router->get('admins/{admin}', function (Admin $admin) {
+            return '';
+        })->name('admins');
         $router->get('tags/{tag}', function (Tag $tag) {
             return '';
         })->name('tags');
@@ -26,6 +29,9 @@ class RouteModelBindingTest extends TestCase
         $router->get('users/{user}/{number}', function (User $user, int $n) {
             return '';
         })->name('users.numbers');
+        $router->post('users', function (User $user) {
+            return '';
+        })->name('users.store');
 
         if ($this->laravelVersion(7)) {
             $router->get('blog/{category}/{post:slug}', function (PostCategory $category, Post $post) {
@@ -56,6 +62,22 @@ class RouteModelBindingTest extends TestCase
     }
 
     /** @test */
+    public function register_inherited_custom_route_key_name()
+    {
+        $expected = [
+            'admins' => [
+                'uri' => 'admins/{admin}',
+                'methods' => ['GET', 'HEAD'],
+                'bindings' => [
+                    'admin' => 'uuid',
+                ],
+            ],
+        ];
+
+        $this->assertSame($expected, (new Ziggy)->filter('admins')->toArray()['routes']);
+    }
+
+    /** @test */
     public function can_ignore_route_parameters_not_bound_to_eloquent_models()
     {
         $this->assertSame([
@@ -64,6 +86,17 @@ class RouteModelBindingTest extends TestCase
                 'methods' => ['GET', 'HEAD'],
             ],
         ], (new Ziggy)->filter(['tokens'])->toArray()['routes']);
+    }
+
+    /** @test */
+    public function can_ignore_route_action_parameters_without_corresponding_route_segment()
+    {
+        $this->assertSame([
+            'users.store' => [
+                'uri' => 'users',
+                'methods' => ['POST'],
+            ],
+        ], (new Ziggy)->filter(['users.store'])->toArray()['routes']);
     }
 
     /** @test */
@@ -125,6 +158,13 @@ class RouteModelBindingTest extends TestCase
                     'user' => 'uuid',
                 ],
             ],
+            'admins' => [
+                'uri' => 'admins/{admin}',
+                'methods' => ['GET', 'HEAD'],
+                'bindings' => [
+                    'admin' => 'uuid',
+                ],
+            ],
             'tags' => [
                 'uri' => 'tags/{tag}',
                 'methods' => ['GET', 'HEAD'],
@@ -142,6 +182,10 @@ class RouteModelBindingTest extends TestCase
                 'bindings' => [
                     'user' => 'uuid',
                 ],
+            ],
+            'users.store' => [
+                'uri' => 'users',
+                'methods' => ['POST'],
             ],
             'posts' => [
                 'uri' => 'blog/{category}/{post}',
@@ -170,7 +214,7 @@ class RouteModelBindingTest extends TestCase
             $this->markTestSkipped('Requires Laravel >=7');
         }
 
-        $json = '{"url":"http:\/\/ziggy.dev","port":null,"defaults":{},"routes":{"users":{"uri":"users\/{user}","methods":["GET","HEAD"],"bindings":{"user":"uuid"}},"tags":{"uri":"tags\/{tag}","methods":["GET","HEAD"],"bindings":{"tag":"id"}},"tokens":{"uri":"tokens\/{token}","methods":["GET","HEAD"]},"users.numbers":{"uri":"users\/{user}\/{number}","methods":["GET","HEAD"],"bindings":{"user":"uuid"}},"posts":{"uri":"blog\/{category}\/{post}","methods":["GET","HEAD"],"bindings":{"category":"id","post":"slug"}},"posts.tags":{"uri":"blog\/{category}\/{post}\/{tag}","methods":["GET","HEAD"],"bindings":{"category":"id","post":"slug","tag":"slug"}}}}';
+        $json = '{"url":"http:\/\/ziggy.dev","port":null,"defaults":{},"routes":{"users":{"uri":"users\/{user}","methods":["GET","HEAD"],"bindings":{"user":"uuid"}},"admins":{"uri":"admins\/{admin}","methods":["GET","HEAD"],"bindings":{"admin":"uuid"}},"tags":{"uri":"tags\/{tag}","methods":["GET","HEAD"],"bindings":{"tag":"id"}},"tokens":{"uri":"tokens\/{token}","methods":["GET","HEAD"]},"users.numbers":{"uri":"users\/{user}\/{number}","methods":["GET","HEAD"],"bindings":{"user":"uuid"}},"users.store":{"uri":"users","methods":["POST"]},"posts":{"uri":"blog\/{category}\/{post}","methods":["GET","HEAD"],"bindings":{"category":"id","post":"slug"}},"posts.tags":{"uri":"blog\/{category}\/{post}\/{tag}","methods":["GET","HEAD"],"bindings":{"category":"id","post":"slug","tag":"slug"}}}}';
 
         $this->assertSame($json, (new Ziggy)->toJson());
     }
@@ -237,4 +281,9 @@ class Tag extends Model
         parent::boot();
         static::$wasBooted = true;
     }
+}
+
+class Admin extends User
+{
+    //
 }
